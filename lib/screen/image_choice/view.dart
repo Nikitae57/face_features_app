@@ -90,6 +90,7 @@ class ImageChoiceView extends StatelessWidget {
   Widget _cameraButton(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.camera),
+      color: Colors.deepPurple,
       iconSize: _iconSize,
       onPressed: () => _takePhoto(context),
     );
@@ -98,6 +99,7 @@ class ImageChoiceView extends StatelessWidget {
   Widget _pickFileButton(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.insert_drive_file_rounded),
+      color: Colors.redAccent,
       iconSize: _iconSize,
       onPressed: () => _pickPhotoFromGallery(context),
     );
@@ -105,11 +107,9 @@ class ImageChoiceView extends StatelessWidget {
 
   void _takePhoto(BuildContext context) {
     context.read<ImageChoiceBloc>().add(ImageChoiceTakePhotoEvent());
-    print('Camera');
   }
 
   void _pickPhotoFromGallery(BuildContext context) {
     context.read<ImageChoiceBloc>().add(ImageChoicePickPhotoFromGalleryEvent());
-    print('Gallery');
   }
 }
