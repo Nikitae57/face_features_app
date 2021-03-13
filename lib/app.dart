@@ -1,8 +1,9 @@
-import 'package:face_features/screen/image_choice/page.dart';
+import 'package:face_features/router_generator.dart';
 import 'package:flutter/material.dart';
 
 class FaceFeaturesApp extends StatelessWidget {
-  // This widget is the root of your application.
+  const FaceFeaturesApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -10,7 +11,8 @@ class FaceFeaturesApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ImageChoice(),
+      initialRoute: RouteGenerator.IMG_CHOICE_ROUTE,
+      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }
 }

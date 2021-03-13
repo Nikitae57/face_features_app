@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:face_features/model/user_photo.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
@@ -9,7 +10,7 @@ part 'image_choice_event.dart';
 part 'image_choice_state.dart';
 
 class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
-  ImageChoiceBloc() : super(InitialImageChoiceState()) {
+  ImageChoiceBloc() : super(ImageChoiceInitialState()) {
     _checkForLostData();
   }
   final ImagePicker _picker = ImagePicker();
@@ -21,9 +22,11 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
     } else if (event is ImageChoicePickPhotoFromGalleryEvent) {
       yield* _mapPickPhotoFromGalleryToState();
     } else if (event is ImageChoiceRestoredLostDataEvent) {
-      yield ImageChoiceGotFileState(event.lostData.file);
-    } else if (event is ImageChoicePickerReturned) {
-      yield* _mapPickerReturnedToState(event.pickedFile);
+      yield* _mapRestoredLostDataToState(event.lostImage);
+    } else if (event is ImageChoicePickerReturnedEvent) {
+      yield* _mapPickerReturnedToState(event.image);
+    } else if (event is ImageChoiceResetEvent) {
+      yield ImageChoiceInitialState();
     }
     
     else {
@@ -31,7 +34,7 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
     }
   }
 
-  Stream<ImageChoiceState> _mapPickerReturnedToState(PickedFile pickedFile) async* {
+  Stream<ImageChoiceState> _mapPickerReturnedToState(UserImage pickedFile) async* {
     if (pickedFile == null) {
       yield ImageChoiceErrorState('Failed to pick a file');
     } else {
@@ -46,6 +49,10 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
   Stream<ImageChoiceState> _mapPickPhotoFromGalleryToState() async* {
     yield ImageChoiceGalleryState();
   }
+  
+  Stream<ImageChoiceState> _mapRestoredLostDataToState(UserImage image) async* {
+    yield ImageChoiceGotFileState(image);
+  }
 
   // If MainActivity was destroyed while user was picking a photo
   Future<void> _checkForLostData() async {
@@ -53,7 +60,8 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
       final LostData lostData = await _picker.getLostData();
 
       if (!lostData.isEmpty && lostData.file != null) {
-        add(ImageChoiceRestoredLostDataEvent(lostData));
+        final UserImage image = UserImage(lostData.file!.path);
+        add(ImageChoiceRestoredLostDataEvent(image));
       }
     }
   }

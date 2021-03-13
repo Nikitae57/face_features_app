@@ -1,9 +1,12 @@
 import 'package:face_features/bloc/image_choice/image_choice_bloc.dart';
+import 'package:face_features/router_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageChoiceView extends StatelessWidget {
+  ImageChoiceView({Key? key}) : super(key: key);
+
   static const double _iconSize = 80.0;
   final ImagePicker _picker = ImagePicker();
 
@@ -27,10 +30,8 @@ class ImageChoiceView extends StatelessWidget {
       return _cameraState(context);
     } else if (state is ImageChoiceGalleryState) {
       return _galleryState(context);
-    } else if (state is InitialImageChoiceState) {
+    } else if (state is ImageChoiceInitialState) {
       return _initialState(context);
-    } else if (state is ImageChoiceGotFileState) {
-      return _initialState(context); // TODO(Nikitae57): implement ImageChoiceGotFileState
     } else if (state is ImageChoiceErrorState){
       return _errorState(context, state.message);
     } else {
@@ -49,10 +50,13 @@ class ImageChoiceView extends StatelessWidget {
   }
 
   void _listenState(BuildContext context, ImageChoiceState state) {
+    final ImageChoiceBloc bloc = context.read<ImageChoiceBloc>();
+
     if (state is ImageChoiceErrorState) {
       _showSnackBar(context, state.message);
     } else if (state is ImageChoiceGotFileState) {
-      _showSnackBar(context, 'Got file!');
+      bloc.add(ImageChoiceResetEvent());
+      RouteGenerator.navigateToImgVerification(context: context, image: state.image);
     }
   }
 
@@ -71,7 +75,7 @@ class ImageChoiceView extends StatelessWidget {
     _picker.getImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front
-    ).then((PickedFile file) => bloc.add(ImageChoicePickerReturned(file)));
+    ).then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
 
     return const CircularProgressIndicator();
   }
@@ -82,7 +86,7 @@ class ImageChoiceView extends StatelessWidget {
     _picker.getImage(
         source: ImageSource.gallery,
         preferredCameraDevice: CameraDevice.front
-    ).then((PickedFile file) => bloc.add(ImageChoicePickerReturned(file)));
+    ).then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
 
     return const CircularProgressIndicator();
   }

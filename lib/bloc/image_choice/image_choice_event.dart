@@ -7,12 +7,14 @@ class ImageChoiceTakePhotoEvent extends ImageChoiceEvent {}
 
 class ImageChoicePickPhotoFromGalleryEvent extends ImageChoiceEvent {}
 
-class ImageChoicePickerReturned extends ImageChoiceEvent {
-  ImageChoicePickerReturned(this.pickedFile);
-  final PickedFile pickedFile;
+class ImageChoicePickerReturnedEvent extends ImageChoiceEvent {
+  ImageChoicePickerReturnedEvent(PickedFile pickedFile) : image = UserImage(pickedFile.path);
+  final UserImage image;
 }
 
 class ImageChoiceRestoredLostDataEvent extends ImageChoiceEvent {
-  ImageChoiceRestoredLostDataEvent(this.lostData);
-  final LostData lostData;
+  ImageChoiceRestoredLostDataEvent(this.lostImage);
+  final UserImage lostImage;
 }
+
+class ImageChoiceResetEvent extends ImageChoiceEvent {}
