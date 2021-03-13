@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:face_features/bloc/image_verification/image_verification_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ImageVerificationView extends StatelessWidget {
   const ImageVerificationView({Key? key, required UserImage image})
@@ -15,22 +17,41 @@ class ImageVerificationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            end: Alignment.topRight,
-            colors: <MaterialColor>[Colors.purple, Colors.blue],
+      return Scaffold(
+        body: BlocListener<ImageVerificationBloc, ImageVerificationState>(
+          listener: (BuildContext context, ImageVerificationState state) => _listenState(context, state),
+          child: BlocBuilder<ImageVerificationBloc, ImageVerificationState>(
+            builder: (BuildContext context, ImageVerificationState state) => _buildState(context, state),
           ),
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            _img(context),
-            _controlTile(context),
-          ],
+      );
+  }
+
+  Widget _buildState(BuildContext context, ImageVerificationState state) {
+    return _initialState(context);
+  }
+
+  void _listenState(BuildContext context, ImageVerificationState state) {
+    if (state is ImageDeniedState) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Widget _initialState(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          colors: <MaterialColor>[Colors.purple, Colors.blue],
         ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          _img(context),
+          _controlTile(context),
+        ],
       ),
     );
   }
@@ -96,44 +117,48 @@ class ImageVerificationView extends StatelessWidget {
 
   Widget _cancelControlBtn(BuildContext context) {
     const double cancelIconSize = 64.0;
+    final ImageVerificationBloc bloc = context.read<ImageVerificationBloc>();
 
-    return const Expanded(
+
+    return Expanded(
       flex: 2,
       child: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
             color: Colors.purple,
           ),
           iconSize: cancelIconSize,
-          onPressed: null),
+          onPressed: () => bloc.add(ImageDeniedEvent())
+      ),
     );
   }
 
   Widget _acceptControlBtn(BuildContext context) {
-    const double acceptIconSize = 86.0;
+    final ImageVerificationBloc bloc = context.read<ImageVerificationBloc>();
 
+    const double acceptIconSize = 86.0;
     return Expanded(
       flex: 4,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(topLeft: _radius),
-        child: Container(
-          // width: screenWidth / 2 + _borderRadius / 2,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: <MaterialColor>[Colors.purple, Colors.blue],
+      child: GestureDetector(
+        onTap: () => bloc.add(ImageVerifiedEvent()),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(topLeft: _radius),
+          child: Container(
+            // width: screenWidth / 2 + _borderRadius / 2,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: <MaterialColor>[Colors.purple, Colors.blue],
+              ),
             ),
-          ),
-          height: _controlButtonsHeight,
-          child: const Center(
-            child: IconButton(
-              icon: Icon(
+            height: _controlButtonsHeight,
+            child: const Center(
+              child: Icon(
                 Icons.check,
+                size: acceptIconSize,
                 color: Colors.white,
               ),
-              iconSize: acceptIconSize,
-              onPressed: null,
             ),
           ),
         ),

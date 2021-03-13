@@ -14,12 +14,12 @@ class ImageVerificationBloc extends Bloc<ImageVerificationEvent, ImageVerificati
 
   @override
   Stream<ImageVerificationState> mapEventToState(ImageVerificationEvent event) async* {
-    if (state is ImageVerifiedEvent) {
+    if (event is ImageVerifiedEvent) {
       yield ImageVerifiedState(_image);
-    } else if (state is ImageDeniedState) {
+    } else if (event is ImageDeniedEvent) {
       yield ImageDeniedState();
     } else {
-      throw Exception('Unknown state ${state.runtimeType}');
+      throw Exception('Unknown event ${state.runtimeType}');
     }
   }
 }
