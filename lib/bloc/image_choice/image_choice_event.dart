@@ -8,8 +8,9 @@ class ImageChoiceTakePhotoEvent extends ImageChoiceEvent {}
 class ImageChoicePickPhotoFromGalleryEvent extends ImageChoiceEvent {}
 
 class ImageChoicePickerReturnedEvent extends ImageChoiceEvent {
-  ImageChoicePickerReturnedEvent(PickedFile pickedFile) : image = UserImage(pickedFile.path);
-  final UserImage image;
+  ImageChoicePickerReturnedEvent(PickedFile? pickedFile)
+      : image = pickedFile == null ? null : UserImage(pickedFile.path);
+  final UserImage? image;
 }
 
 class ImageChoiceRestoredLostDataEvent extends ImageChoiceEvent {

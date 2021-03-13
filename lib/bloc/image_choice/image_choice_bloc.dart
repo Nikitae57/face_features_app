@@ -34,7 +34,7 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
     }
   }
 
-  Stream<ImageChoiceState> _mapPickerReturnedToState(UserImage pickedFile) async* {
+  Stream<ImageChoiceState> _mapPickerReturnedToState(UserImage? pickedFile) async* {
     if (pickedFile == null) {
       yield ImageChoiceErrorState('Failed to pick a file');
     } else {

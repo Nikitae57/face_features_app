@@ -7,18 +7,27 @@ import 'package:image_picker/image_picker.dart';
 class ImageChoiceView extends StatelessWidget {
   ImageChoiceView({Key? key}) : super(key: key);
 
-  static const double _iconSize = 80.0;
+  static const double _borderRadiusVal = 48.0;
+  static const double _iconSize = 124.0;
   final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pick an image')),
       body: BlocListener<ImageChoiceBloc, ImageChoiceState>(
         listener: (BuildContext context, ImageChoiceState state) => _listenState(context, state),
-        child: Center(
-          child: BlocBuilder<ImageChoiceBloc, ImageChoiceState>(
-            builder: (BuildContext context, ImageChoiceState state) => _buildState(context, state),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+              colors: <Color>[Colors.purple, Colors.blue],
+            ),
+          ),
+          child: Center(
+            child: BlocBuilder<ImageChoiceBloc, ImageChoiceState>(
+              builder: (BuildContext context, ImageChoiceState state) => _buildState(context, state),
+            ),
           ),
         ),
       ),
@@ -32,7 +41,7 @@ class ImageChoiceView extends StatelessWidget {
       return _galleryState(context);
     } else if (state is ImageChoiceInitialState) {
       return _initialState(context);
-    } else if (state is ImageChoiceErrorState){
+    } else if (state is ImageChoiceErrorState) {
       return _errorState(context, state.message);
     } else {
       return _errorState(context, 'Unknown state');
@@ -72,40 +81,50 @@ class ImageChoiceView extends StatelessWidget {
 
   Widget _cameraState(BuildContext context) {
     final ImageChoiceBloc bloc = context.read<ImageChoiceBloc>();
-    _picker.getImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front
-    ).then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
+    _picker
+        .getImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front)
+        .then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
 
-    return const CircularProgressIndicator();
+    return const SizedBox.shrink();
   }
 
   Widget _galleryState(BuildContext context) {
     final ImageChoiceBloc bloc = context.read<ImageChoiceBloc>();
 
-    _picker.getImage(
-        source: ImageSource.gallery,
-        preferredCameraDevice: CameraDevice.front
-    ).then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
+    _picker
+        .getImage(source: ImageSource.gallery, preferredCameraDevice: CameraDevice.front)
+        .then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file)));
 
-    return const CircularProgressIndicator();
+    return const SizedBox.shrink();
   }
 
   Widget _cameraButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.camera),
-      color: Colors.deepPurple,
-      iconSize: _iconSize,
-      onPressed: () => _takePhoto(context),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(_borderRadiusVal),
+      child: ColoredBox(
+        color: Colors.white,
+        child: IconButton(
+          icon: const Icon(Icons.camera),
+          color: Colors.purpleAccent,
+          iconSize: _iconSize,
+          onPressed: () => _takePhoto(context),
+        ),
+      ),
     );
   }
 
   Widget _pickFileButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.insert_drive_file_rounded),
-      color: Colors.redAccent,
-      iconSize: _iconSize,
-      onPressed: () => _pickPhotoFromGallery(context),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(_borderRadiusVal),
+      child: ColoredBox(
+        color: Colors.white,
+        child: IconButton(
+          icon: const Icon(Icons.insert_drive_file),
+          color: Colors.blue,
+          iconSize: _iconSize,
+          onPressed: () => _pickPhotoFromGallery(context),
+        ),
+      ),
     );
   }
 
