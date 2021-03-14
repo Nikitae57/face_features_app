@@ -8,7 +8,7 @@ part 'image_verification_event.dart';
 part 'image_verification_state.dart';
 
 class ImageVerificationBloc extends Bloc<ImageVerificationEvent, ImageVerificationState> {
-  ImageVerificationBloc(this._image) : super(ImageVerificationInitial(_image));
+  ImageVerificationBloc(this._image) : super(ImageVerificationInitialState(_image));
 
   final UserImage _image;
 

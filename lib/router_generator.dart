@@ -4,7 +4,6 @@ import 'package:face_features/screen/image_verification/page.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
-
   static const String IMG_CHOICE_ROUTE = '/';
   static const String IMG_VERIFICATION_ROUTE = '/img_verification';
   static const String IMG_PROCESSING_ROUTE = '/img_processing';
@@ -42,21 +41,24 @@ class RouteGenerator {
     }
   }
 
-  static void navigate({required String to, required BuildContext context, dynamic args}) {
-    Navigator.of(context).pushNamed(to, arguments: args);
+  static Future<dynamic> navigate({required String to, required BuildContext context, dynamic args}) async {
+    return Navigator.of(context).pushNamed(to, arguments: args);
   }
 
-  static void navigateToImgVerification({required BuildContext context, required UserImage image}) {
-    navigate(to: IMG_VERIFICATION_ROUTE, context: context, args: image);
+  static Future<dynamic> navigateToImgVerification({
+    required BuildContext context,
+    required UserImage image
+  }) async {
+    return navigate(to: IMG_VERIFICATION_ROUTE, context: context, args: image);
   }
 
   static Route<ImageChoicePage> _imgChoicePage() {
-    return MaterialPageRoute<ImageChoicePage>(builder: (_) => const ImageChoicePage());
+    return NoAnimationMaterialPageRoute<ImageChoicePage>(builder: (_) => const ImageChoicePage());
   }
 
   static Route<ImageVerificationPage> _imgVerificationPage(dynamic args) {
     if (args is UserImage) {
-      return MaterialPageRoute<ImageVerificationPage>(
+      return NoAnimationMaterialPageRoute<ImageVerificationPage>(
         builder: (_) => ImageVerificationPage(
           image: args,
         ),
@@ -64,5 +66,21 @@ class RouteGenerator {
     } else {
       throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
     }
+  }
+}
+
+class NoAnimationMaterialPageRoute<T> extends MaterialPageRoute<T> {
+  NoAnimationMaterialPageRoute({
+    required WidgetBuilder builder,
+    RouteSettings? settings,
+    bool maintainState = true,
+    bool fullscreenDialog = false,
+  }) : super(builder: builder, maintainState: maintainState, settings: settings, fullscreenDialog: fullscreenDialog);
+
+  @override
+  Widget buildTransitions(
+      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+
+    return child;
   }
 }

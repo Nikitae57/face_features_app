@@ -10,7 +10,7 @@ class ImageChoicePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<ImageChoiceBloc>(
       create: (_) => ImageChoiceBloc(),
-      child: ImageChoiceView(),
+      child: const ImageChoiceView(),
     );
   }
 }

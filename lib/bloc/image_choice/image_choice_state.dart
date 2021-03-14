@@ -14,8 +14,9 @@ class ImageChoiceErrorState extends ImageChoiceState {
   final String message;
 }
 
-@immutable
 class ImageChoiceGotFileState extends ImageChoiceState {
   ImageChoiceGotFileState(this.image);
   final UserImage image;
 }
+
+class ImageChoicePoppingBackState extends ImageChoiceState {}

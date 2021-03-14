@@ -26,7 +26,7 @@ class ImageChoiceBloc extends Bloc<ImageChoiceEvent, ImageChoiceState> {
     } else if (event is ImageChoicePickerReturnedEvent) {
       yield* _mapPickerReturnedToState(event.image);
     } else if (event is ImageChoiceResetEvent) {
-      yield ImageChoiceInitialState();
+      yield ImageChoicePoppingBackState();
     }
     
     else {

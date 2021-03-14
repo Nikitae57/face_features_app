@@ -1,15 +1,49 @@
 import 'package:face_features/bloc/image_choice/image_choice_bloc.dart';
+import 'package:face_features/model/user_photo.dart';
 import 'package:face_features/router_generator.dart';
+import 'package:face_features/widget/image_choice/image_source_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ImageChoiceView extends StatelessWidget {
-  ImageChoiceView({Key? key}) : super(key: key);
+class ImageChoiceView extends StatefulWidget {
+  const ImageChoiceView({Key? key}) : super(key: key);
+
+  @override
+  _ImageChoiceViewState createState() => _ImageChoiceViewState();
+}
+
+class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProviderStateMixin {
+  final ImagePicker _picker = ImagePicker();
 
   static const double _borderRadiusVal = 48.0;
   static const double _iconSize = 124.0;
-  final ImagePicker _picker = ImagePicker();
+
+  static const int _transitionDurationMs = 500;
+  static const Duration _transitionDuration = Duration(milliseconds: _transitionDurationMs);
+  late final AnimationController _animationController;
+  late final CurvedAnimation _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(vsync: this, duration: _transitionDuration);
+    _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeInOutCirc);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _animationController.dispose();
+  }
+
+  void _animateIn() {
+    _animationController.forward();
+  }
+
+  void _animateOut() {
+    _animationController.reverse(from: 1.0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +51,7 @@ class ImageChoiceView extends StatelessWidget {
       body: BlocListener<ImageChoiceBloc, ImageChoiceState>(
         listener: (BuildContext context, ImageChoiceState state) => _listenState(context, state),
         child: Container(
+          height: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomLeft,
@@ -24,10 +59,9 @@ class ImageChoiceView extends StatelessWidget {
               colors: <Color>[Colors.purple, Colors.blue],
             ),
           ),
-          child: Center(
-            child: BlocBuilder<ImageChoiceBloc, ImageChoiceState>(
-              builder: (BuildContext context, ImageChoiceState state) => _buildState(context, state),
-            ),
+          child: BlocBuilder<ImageChoiceBloc, ImageChoiceState>(
+            bloc: BlocProvider.of<ImageChoiceBloc>(context),
+            builder: (BuildContext context, ImageChoiceState state) => _buildState(context, state),
           ),
         ),
       ),
@@ -41,6 +75,11 @@ class ImageChoiceView extends StatelessWidget {
       return _galleryState(context);
     } else if (state is ImageChoiceInitialState) {
       return _initialState(context);
+    } else if (state is ImageChoiceGotFileState) {
+      return _gotFileState(context, state.image);
+    } else if (state is ImageChoicePoppingBackState) {
+      _animationController.reset();
+      return _initialState(context);
     } else if (state is ImageChoiceErrorState) {
       return _errorState(context, state.message);
     } else {
@@ -48,25 +87,60 @@ class ImageChoiceView extends StatelessWidget {
     }
   }
 
+  void _listenState(BuildContext context, ImageChoiceState state) {
+    if (state is ImageChoiceGotFileState) {
+      _navigateToVerificationScreen(context, state.image);
+    }
+  }
+
   Widget _initialState(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        _pickFileButton(context),
-        _cameraButton(context),
-      ],
+    _animateIn();
+    return _imgSourceButtons();
+  }
+
+  Widget _gotFileState(BuildContext context, UserImage image) {
+    _animateOut();
+    return _imgSourceButtons();
+  }
+
+  Widget _imgSourceButtons() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (BuildContext context, _) {
+        final double slide = (1 - _animation.value) * screenWidth / 2;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Opacity(
+              opacity: 1.0,
+              child: Transform.translate(
+                offset: Offset(-slide, 0),
+                child: ImageSourceButton(
+                  onPressed: () => _pickPhotoFromGallery(context),
+                  icon: const Icon(Icons.insert_drive_file, color: Colors.blue),
+                ),
+              ),
+            ),
+            Opacity(
+              opacity: 1.0,
+              child: Transform.translate(
+                offset: Offset(slide, 0),
+                child: _cameraButton(context),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 
-  void _listenState(BuildContext context, ImageChoiceState state) {
-    final ImageChoiceBloc bloc = context.read<ImageChoiceBloc>();
-
-    if (state is ImageChoiceErrorState) {
-      _showSnackBar(context, state.message);
-    } else if (state is ImageChoiceGotFileState) {
-      bloc.add(ImageChoiceResetEvent());
-      RouteGenerator.navigateToImgVerification(context: context, image: state.image);
-    }
+  Future<void> _navigateToVerificationScreen(BuildContext context, UserImage image) async {
+    await Future<void>.delayed(_transitionDuration);
+    await RouteGenerator.navigateToImgVerification(context: context, image: image);
+    BlocProvider.of<ImageChoiceBloc>(context).add(ImageChoiceResetEvent());
   }
 
   void _showSnackBar(BuildContext context, String message) {
@@ -83,9 +157,9 @@ class ImageChoiceView extends StatelessWidget {
     final ImageChoiceBloc bloc = context.read<ImageChoiceBloc>();
     _picker
         .getImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front)
-        .then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file!)));
+        .then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file)));
 
-    return const SizedBox.shrink();
+    return _initialState(context);
   }
 
   Widget _galleryState(BuildContext context) {
@@ -95,7 +169,7 @@ class ImageChoiceView extends StatelessWidget {
         .getImage(source: ImageSource.gallery, preferredCameraDevice: CameraDevice.front)
         .then((PickedFile? file) => bloc.add(ImageChoicePickerReturnedEvent(file)));
 
-    return const SizedBox.shrink();
+    return _initialState(context);
   }
 
   Widget _cameraButton(BuildContext context) {
@@ -104,8 +178,10 @@ class ImageChoiceView extends StatelessWidget {
       child: ColoredBox(
         color: Colors.white,
         child: IconButton(
-          icon: const Icon(Icons.camera),
-          color: Colors.purpleAccent,
+          icon: const Icon(
+            Icons.camera,
+            color: Colors.purpleAccent,
+          ),
           iconSize: _iconSize,
           onPressed: () => _takePhoto(context),
         ),
@@ -129,10 +205,10 @@ class ImageChoiceView extends StatelessWidget {
   }
 
   void _takePhoto(BuildContext context) {
-    context.read<ImageChoiceBloc>().add(ImageChoiceTakePhotoEvent());
+    BlocProvider.of<ImageChoiceBloc>(context).add(ImageChoiceTakePhotoEvent());
   }
 
   void _pickPhotoFromGallery(BuildContext context) {
-    context.read<ImageChoiceBloc>().add(ImageChoicePickPhotoFromGalleryEvent());
+    BlocProvider.of<ImageChoiceBloc>(context).add(ImageChoicePickPhotoFromGalleryEvent());
   }
 }
