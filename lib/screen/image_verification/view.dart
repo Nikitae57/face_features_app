@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:face_features/bloc/image_verification/image_verification_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
+import 'package:face_features/widget/item_fader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,57 +17,59 @@ class ImageVerificationView extends StatefulWidget {
   _ImageVerificationViewState createState() => _ImageVerificationViewState();
 }
 
-class _ImageVerificationViewState extends State<ImageVerificationView>
-    with SingleTickerProviderStateMixin {
-
+class _ImageVerificationViewState extends State<ImageVerificationView> with TickerProviderStateMixin {
   static const double _borderRadiusVal = 48.0;
   static const Radius _radius = Radius.circular(_borderRadiusVal);
   static const double _controlButtonsHeight = 150.0;
   static const double _imgTopOffset = 100.0;
 
-  static const Duration _transitionDuration = Duration(milliseconds: 500);
-  static const double _maxControlsHeightPercent = 0.3;
-  
-  late final AnimationController _animationController;
-  late final CurvedAnimation _animation;
+  static const Duration _transitionDuration = Duration(milliseconds: 400);
+  static const Duration _fadeDuration = Duration(milliseconds: 100);
+
+  late final List<GlobalKey<ItemFaderState>> _keys;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: _transitionDuration);
-    _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeInOut);
+    _keys = List<GlobalKey<ItemFaderState>>.generate(4, (_) => GlobalKey<ItemFaderState>());
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        body: BlocListener<ImageVerificationBloc, ImageVerificationState>(
-          listener: (BuildContext context, ImageVerificationState state) => _listenState(context, state),
-          child: BlocBuilder<ImageVerificationBloc, ImageVerificationState>(
-            builder: (BuildContext context, ImageVerificationState state) => _buildState(context, state),
-          ),
+    return Scaffold(
+      body: BlocListener<ImageVerificationBloc, ImageVerificationState>(
+        listener: (BuildContext context, ImageVerificationState state) => _listenState(context, state),
+        child: BlocBuilder<ImageVerificationBloc, ImageVerificationState>(
+          builder: (BuildContext context, ImageVerificationState state) => _buildState(context, state),
         ),
-      );
+      ),
+    );
   }
 
   Future<void> _animateIn() async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    _animationController.forward();
+    for (final GlobalKey<ItemFaderState> key in _keys) {
+      await Future<void>.delayed(_fadeDuration);
+      key.currentState?.show();
+    }
   }
 
-  void _animateOut() => _animationController.reverse();
+  Future<void> _animateOut() async {
+    for (int i = _keys.length - 1; i >= 0; i--) {
+      _keys[i].currentState?.hide();
+      await Future<void>.delayed(_fadeDuration);
+    }
+  }
 
   Widget _buildState(BuildContext context, ImageVerificationState state) {
     if (state is ImageVerificationInitialState) {
-      return _initialState(context);      
+      return _initialState(context);
     }
-    
+
     if (state is ImageDeniedState) {
       return _imageDeniedState(context);
     }
@@ -80,8 +83,7 @@ class _ImageVerificationViewState extends State<ImageVerificationView>
   }
 
   Future<void> _navigateBack(BuildContext context) async {
-    await Future<void>.delayed(_transitionDuration);
-    // _animationController.dispose();
+    await _animateOut();
     Navigator.of(context).pop();
   }
 
@@ -91,49 +93,44 @@ class _ImageVerificationViewState extends State<ImageVerificationView>
   }
 
   Widget _imageDeniedState(BuildContext context) {
-    _animateOut();
     return _screen();
   }
 
   Widget _screen() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (BuildContext context, _) {
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-              colors: <MaterialColor>[Colors.purple, Colors.blue],
-            ),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              _img(context),
-              _controlTile(context),
-            ],
-          ),
-        );
-      },
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          colors: <MaterialColor>[Colors.purple, Colors.blue],
+        ),
+      ),
+      child: Column(
+        children: <Widget>[
+          const SizedBox(height: _imgTopOffset),
+          _img(context),
+          const Spacer(),
+          _controlTile(context),
+        ],
+      ),
     );
   }
 
   Widget _img(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double imgSlide = -(1 - _animation.value) * screenWidth * 1.5;
-
-    return Positioned(
-      top: _imgTopOffset + imgSlide,
-      width: screenWidth,
-      height: screenWidth,
+    return ItemFader(
+      key: _keys[0],
+      direction: ItemFaderInDirection.DOWN,
+      offset: 200,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: ClipRRect(
           borderRadius: const BorderRadius.all(_radius),
-          child: Image.file(
-            File(widget._image.path),
-            fit: BoxFit.cover,
+          child: AspectRatio(
+            aspectRatio: 1.0,
+            child: Image.file(
+              File(widget._image.path),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
@@ -142,12 +139,9 @@ class _ImageVerificationViewState extends State<ImageVerificationView>
 
   Widget _controlTile(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double controlsSlide = -(1 - _animation.value) * _maxControlsHeightPercent * screenHeight;
 
-    return Positioned(
-      bottom: controlsSlide,
-      left: 10.0,
-      right: 10.0,
+    return ItemFader(
+      key: _keys[1],
       child: ClipRRect(
           borderRadius: const BorderRadius.only(topLeft: _radius, topRight: _radius),
           child: Container(
@@ -155,7 +149,11 @@ class _ImageVerificationViewState extends State<ImageVerificationView>
             height: screenHeight * 0.3,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[_confirmationText(context), const Spacer(), _controlButtons(context)],
+              children: <Widget>[
+                _confirmationText(context),
+                const Spacer(),
+                _controlButtons(context),
+              ],
             ),
           )),
     );
@@ -173,56 +171,69 @@ class _ImageVerificationViewState extends State<ImageVerificationView>
   }
 
   Widget _controlButtons(BuildContext context) {
-    return Stack(children: <Widget>[
-      Row(
-        children: <Widget>[_cancelControlBtn(context), _acceptControlBtn(context)],
-      )
-    ]);
+    return SizedBox(
+      height: _controlButtonsHeight,
+      width: double.infinity,
+      child: Stack(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              _cancelControlBtn(context),
+              _acceptControlBtn(context),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _cancelControlBtn(BuildContext context) {
-    const double cancelIconSize = 64.0;
     final ImageVerificationBloc bloc = context.read<ImageVerificationBloc>();
-
+    const double cancelIconSize = 64.0;
 
     return Expanded(
       flex: 2,
-      child: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.purple,
-          ),
-          iconSize: cancelIconSize,
-          onPressed: () => bloc.add(ImageDeniedEvent())
+      child: ItemFader(
+        key: _keys[3],
+        child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.purple,
+            ),
+            iconSize: cancelIconSize,
+            onPressed: () => bloc.add(ImageDeniedEvent())),
       ),
     );
   }
 
   Widget _acceptControlBtn(BuildContext context) {
     final ImageVerificationBloc bloc = context.read<ImageVerificationBloc>();
-
     const double acceptIconSize = 86.0;
+
     return Expanded(
       flex: 4,
-      child: GestureDetector(
-        onTap: () => bloc.add(ImageVerifiedEvent()),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(topLeft: _radius),
-          child: Container(
-            // width: screenWidth / 2 + _borderRadius / 2,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: <MaterialColor>[Colors.purple, Colors.blue],
+      child: ItemFader(
+        key: _keys[2],
+        child: GestureDetector(
+          onTap: () => bloc.add(ImageVerifiedEvent()),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(topLeft: _radius),
+            child: Container(
+              // width: screenWidth / 2 + _borderRadius / 2,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: <MaterialColor>[Colors.purple, Colors.blue],
+                ),
               ),
-            ),
-            height: _controlButtonsHeight,
-            child: const Center(
-              child: Icon(
-                Icons.check,
-                size: acceptIconSize,
-                color: Colors.white,
+              height: _controlButtonsHeight,
+              child: const Center(
+                child: Icon(
+                  Icons.check,
+                  size: acceptIconSize,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

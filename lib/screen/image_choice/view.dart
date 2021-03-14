@@ -1,7 +1,6 @@
 import 'package:face_features/bloc/image_choice/image_choice_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
 import 'package:face_features/router_generator.dart';
-import 'package:face_features/widget/image_choice/image_source_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +18,7 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
   static const double _borderRadiusVal = 48.0;
   static const double _iconSize = 124.0;
 
-  static const int _transitionDurationMs = 500;
+  static const int _transitionDurationMs = 400;
   static const Duration _transitionDuration = Duration(milliseconds: _transitionDurationMs);
   late final AnimationController _animationController;
   late final CurvedAnimation _animation;
@@ -33,8 +32,9 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
 
   @override
   void dispose() {
-    super.dispose();
+    print('DISPOSE');
     _animationController.dispose();
+    super.dispose();
   }
 
   void _animateIn() {
@@ -118,10 +118,7 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
               opacity: 1.0,
               child: Transform.translate(
                 offset: Offset(-slide, 0),
-                child: ImageSourceButton(
-                  onPressed: () => _pickPhotoFromGallery(context),
-                  icon: const Icon(Icons.insert_drive_file, color: Colors.blue),
-                ),
+                child: _pickFileButton(context),
               ),
             ),
             Opacity(
@@ -143,13 +140,8 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
     BlocProvider.of<ImageChoiceBloc>(context).add(ImageChoiceResetEvent());
   }
 
-  void _showSnackBar(BuildContext context, String message) {
-    final SnackBar snackBar = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
 
   Widget _errorState(BuildContext context, String message) {
-    // Showing error in listener
     return _initialState(context);
   }
 
