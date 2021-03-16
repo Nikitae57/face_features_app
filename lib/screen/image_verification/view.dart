@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:face_features/bloc/image_verification/image_verification_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
@@ -20,10 +21,8 @@ class ImageVerificationView extends StatefulWidget {
 class _ImageVerificationViewState extends State<ImageVerificationView> with TickerProviderStateMixin {
   static const double _borderRadiusVal = 48.0;
   static const Radius _radius = Radius.circular(_borderRadiusVal);
-  static const double _controlButtonsHeight = 150.0;
-  static const double _imgTopOffset = 100.0;
+  static const double _padding = 8.0;
 
-  static const Duration _transitionDuration = Duration(milliseconds: 400);
   static const Duration _fadeDuration = Duration(milliseconds: 100);
 
   late final List<GlobalKey<ItemFaderState>> _keys;
@@ -45,7 +44,15 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
       body: BlocListener<ImageVerificationBloc, ImageVerificationState>(
         listener: (BuildContext context, ImageVerificationState state) => _listenState(context, state),
         child: BlocBuilder<ImageVerificationBloc, ImageVerificationState>(
-          builder: (BuildContext context, ImageVerificationState state) => _buildState(context, state),
+          builder: (BuildContext context, ImageVerificationState state) {
+            return WillPopScope(
+                child: _buildState(context, state),
+                onWillPop: () async {
+                  await _navigateBack(context);
+                  return false;
+                }
+            );
+          },
         ),
       ),
     );
@@ -97,36 +104,59 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   }
 
   Widget _screen() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-          colors: <MaterialColor>[Colors.purple, Colors.blue],
-        ),
-      ),
-      child: Column(
-        children: <Widget>[
-          const SizedBox(height: _imgTopOffset),
-          _img(context),
-          const Spacer(),
-          _controlTile(context),
-        ],
-      ),
+    return OrientationBuilder(
+      builder: (BuildContext context, Orientation orientation) {
+        final Widget child;
+        if (orientation == Orientation.portrait) {
+          child = Column(children: _screenContent());
+        } else {
+          child = Row(
+              children: <Widget>[..._screenContent(), const Spacer()],
+              crossAxisAlignment: CrossAxisAlignment.end
+          );
+        }
+
+        return Container(
+          height: double.infinity,
+          width: double.infinity,
+
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+              colors: <MaterialColor>[Colors.purple, Colors.blue],
+            ),
+          ),
+          child: child,
+        );
+      },
     );
   }
 
+  List<Widget> _screenContent() {
+    return <Widget>[
+      const Spacer(),
+      _img(context),
+      const Spacer(),
+      _controlTile(context),
+    ];
+  }
+
   Widget _img(BuildContext context) {
-    return ItemFader(
-      key: _keys[0],
-      direction: ItemFaderInDirection.DOWN,
-      offset: 200,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(_radius),
-          child: AspectRatio(
-            aspectRatio: 1.0,
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double imgSize = min(screenWidth, screenHeight) * 0.9;
+
+    return Center(
+      child: ItemFader(
+        key: _keys[0],
+        direction: ItemFaderInDirection.DOWN,
+        offset: 200,
+        child: SizedBox(
+          height: imgSize,
+          width: imgSize,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(_radius),
             child: Image.file(
               File(widget._image.path),
               fit: BoxFit.cover,
@@ -138,24 +168,40 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   }
 
   Widget _controlTile(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
+    return OrientationBuilder(
+      builder: (BuildContext context, Orientation orientation) {
+        // final EdgeInsets insets;
+        // if (orientation == Orientation.portrait) {
+        //   insets = const EdgeInsets.symmetric(horizontal: _padding);
+        // } else {
+        //   insets = const EdgeInsets.symmetric(vertical: _padding);
+        // }
+        final double screenHeight = MediaQuery.of(context).size.height;
+        final double screenWidth = MediaQuery.of(context).size.width;
+        final double tileSize = min(screenWidth, screenHeight) * 0.9;
 
-    return ItemFader(
-      key: _keys[1],
-      child: ClipRRect(
-          borderRadius: const BorderRadius.only(topLeft: _radius, topRight: _radius),
-          child: Container(
-            color: Colors.white,
-            height: screenHeight * 0.3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                _confirmationText(context),
-                const Spacer(),
-                _controlButtons(context),
-              ],
-            ),
-          )),
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: _padding),
+          child: ItemFader(
+            key: _keys[1],
+            child: ClipRRect(
+                borderRadius: const BorderRadius.only(topLeft: _radius, topRight: _radius),
+                child: Container(
+                  width: tileSize,
+                  color: Colors.white,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      _confirmationText(context),
+                      _controlButtons(context),
+                    ],
+                  ),
+                )),
+          ),
+        );
+      },
     );
   }
 
@@ -171,19 +217,12 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   }
 
   Widget _controlButtons(BuildContext context) {
-    return SizedBox(
-      height: _controlButtonsHeight,
-      width: double.infinity,
-      child: Stack(
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              _cancelControlBtn(context),
-              _acceptControlBtn(context),
-            ],
-          ),
-        ],
-      ),
+
+    return Row(
+      children: <Widget>[
+        _cancelControlBtn(context),
+        _acceptControlBtn(context),
+      ],
     );
   }
 
@@ -197,7 +236,7 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
         key: _keys[3],
         child: IconButton(
             icon: const Icon(
-              Icons.arrow_back,
+              Icons.arrow_back_rounded,
               color: Colors.purple,
             ),
             iconSize: cancelIconSize,
@@ -220,17 +259,11 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
             borderRadius: const BorderRadius.only(topLeft: _radius),
             child: Container(
               // width: screenWidth / 2 + _borderRadius / 2,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: <MaterialColor>[Colors.purple, Colors.blue],
-                ),
-              ),
-              height: _controlButtonsHeight,
+              decoration: _btnGradient(),
+              // height: btnHeight,
               child: const Center(
                 child: Icon(
-                  Icons.check,
+                  Icons.check_rounded,
                   size: acceptIconSize,
                   color: Colors.white,
                 ),
@@ -238,6 +271,25 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  BoxDecoration _btnGradient() {
+    final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+
+    final List<MaterialColor> colors;
+    if (isPortrait) {
+      colors = <MaterialColor>[Colors.purple, Colors.blue];
+    } else {
+      colors = <MaterialColor>[Colors.blue, Colors.purple];
+    }
+
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: colors,
       ),
     );
   }
