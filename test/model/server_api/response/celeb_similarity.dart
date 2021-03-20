@@ -10,7 +10,7 @@ void main() {
   final Map<String, dynamic> testJson = jsonDecode(testJsonStr) as Map<String, dynamic>;
 
   test('Convert JSON to CelebSimilarityResponse instance', () {
-    final CelebSimilarityResponse celeb = CelebSimilarityResponse.fromJson(testJson);
+    final CelebSimilarityResult celeb = CelebSimilarityResult.fromJson(testJson);
     assert(celeb.userCroppedFaceImgId == 'd944a72205ab48e19883');
     assert(celeb.predictions.length == 1);
 
