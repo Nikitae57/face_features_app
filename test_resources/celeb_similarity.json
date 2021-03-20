@@ -1,0 +1,23 @@
+{
+  "user_cropped_face_id": "d944a72205ab48e19883",
+  "predictions": [
+    {
+      "most_similar_face_url": "static/img/celeb/optimized_vgg/Wesley Jonathan/80e835ea1e.jpg",
+      "predicted_celebs": [
+        {
+          "name": "Wesley Jonathan",
+          "probability": 0.9973406195640564
+        },
+        {
+          "name": "Billy Dee Williams",
+          "probability": 0.0004724319151137024
+        },
+        {
+          "name": "CCH Pounder",
+          "probability": 0.00024880768614821136
+        }
+      ]
+    }
+  ],
+  "error": null
+}

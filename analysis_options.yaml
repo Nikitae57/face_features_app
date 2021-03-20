@@ -40,6 +40,9 @@ analyzer:
     unnecessary_null_comparison: ignore
   exclude:
     - "bin/cache/**"
+    - "**/*.g.dart"
+    - "test"
+    - "test_resources"
 
 linter:
   rules:
