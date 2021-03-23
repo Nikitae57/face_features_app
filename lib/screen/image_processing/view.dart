@@ -29,10 +29,14 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
   }
 
   Widget _buildState(BuildContext context, ImageProcessingState state) {
-   return const CircularProgressIndicator.adaptive();
+    return const SizedBox(
+      height: double.infinity,
+      width: double.infinity,
+      child: CircularProgressIndicator.adaptive(),
+    );
   }
 
   void _listenState(BuildContext context, ImageProcessingState state) {
-    // if (state is GotImageProcessingResult<>)
+    print(state);
   }
 }

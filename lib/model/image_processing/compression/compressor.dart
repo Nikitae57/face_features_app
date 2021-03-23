@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:face_features/model/image_processing/compression/compression_params.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
 
@@ -18,7 +17,8 @@ class Compressor {
   ];
 
   static Future<void> compressImageFile(CompressionParams params) {
-    return compute<CompressionParams, void>(_compressImageFile, params);
+    return _compressImageFile(params);
+    // return compute<CompressionParams, void>(_compressImageFile, params);
   }
 
   static Future<void> _compressImageFile(CompressionParams params) async {

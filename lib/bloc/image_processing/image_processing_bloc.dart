@@ -78,7 +78,8 @@ class ImageProcessingBloc extends Bloc<ImageProcessingEvent, ImageProcessingStat
       yield GotImageProcessingResult<CelebSimilarityResult>(result);
     } on NetworkException {
       yield ImageProcessingNetworkErrorState();
-    } on Exception {
+    } on Exception catch (e) {
+      print(e);
       yield ImageProcessingInternalErrorState();
     }
   }
@@ -104,7 +105,7 @@ class ImageProcessingBloc extends Bloc<ImageProcessingEvent, ImageProcessingStat
   Future<String> _getCompressedImageTargetPath() async {
     final Directory cacheDir = await getTemporaryDirectory();
     final String uuid = const Uuid().v1();
-    final String targetPath = p.join(cacheDir.path, uuid);
+    final String targetPath = p.join(cacheDir.path, '$uuid.jpg');
 
     return targetPath;
   }
@@ -119,7 +120,8 @@ class ImageProcessingBloc extends Bloc<ImageProcessingEvent, ImageProcessingStat
   
   Future<String> _compressImage(String imagePath) async {
     final CompressionParams params = await _getCompressionParams(imagePath);
-    await compute<CompressionParams, void>(Compressor.compressImageFile, params);
+    await Compressor.compressImageFile(params);
+    // await compute<CompressionParams, void>(Compressor.compressImageFile, params);
     
     return params.targetPath;
   }

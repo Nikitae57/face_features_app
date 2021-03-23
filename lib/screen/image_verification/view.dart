@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:face_features/bloc/image_verification/image_verification_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
+import 'package:face_features/route_generator.dart';
 import 'package:face_features/widget/item_fader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,12 +87,19 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   void _listenState(BuildContext context, ImageVerificationState state) {
     if (state is ImageDeniedState) {
       _navigateBack(context);
+    } else if (state is ImageVerifiedState) {
+      _navigateToImageProcessing(context, state.image);
     }
   }
 
   Future<void> _navigateBack(BuildContext context) async {
     await _animateOut();
     Navigator.of(context).pop();
+  }
+
+  Future<void> _navigateToImageProcessing(BuildContext context, UserImage image) async {
+    // await _animateOut();
+    RouteGenerator.navigateToImgProcessing(context: context, image: image);
   }
 
   Widget _initialState(BuildContext context) {

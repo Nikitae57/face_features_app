@@ -38,7 +38,7 @@ class RouteGenerator {
       case IMG_VERIFICATION_ROUTE:
         return _imgVerificationPage(args);
       case IMG_PROCESSING_ROUTE:
-        // return _imgProcessingPage();
+        return _imgProcessingPage(args);
       default:
         throw ArgumentError('Unknown route name: $destinationName');
     }
@@ -91,10 +91,10 @@ class RouteGenerator {
     }
   }
 
-  static Route<ImageVerificationPage> _imgProcessingPage(dynamic args) {
+  static Route<ImageProcessingPage> _imgProcessingPage(dynamic args) {
     if (args is UserImage) {
-      return NoAnimationMaterialPageRoute<ImageVerificationPage>(
-        builder: (_) => const ImageProcessingPage(),
+      return NoAnimationMaterialPageRoute<ImageProcessingPage>(
+        builder: (_) => ImageProcessingPage(image: args),
       );
     } else {
       throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
