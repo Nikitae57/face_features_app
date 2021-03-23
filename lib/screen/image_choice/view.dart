@@ -1,6 +1,7 @@
 import 'package:face_features/bloc/image_choice/image_choice_bloc.dart';
 import 'package:face_features/model/user_photo.dart';
-import 'package:face_features/router_generator.dart';
+import 'package:face_features/route_generator.dart';
+import 'package:face_features/screen/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,7 +33,6 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
 
   @override
   void dispose() {
-    print('DISPOSE');
     _animationController.dispose();
     super.dispose();
   }
@@ -52,13 +52,7 @@ class _ImageChoiceViewState extends State<ImageChoiceView> with SingleTickerProv
         listener: (BuildContext context, ImageChoiceState state) => _listenState(context, state),
         child: Container(
           height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-              colors: <Color>[Colors.purple, Colors.blue],
-            ),
-          ),
+          decoration: getBackgroundGradient(context),
           child: BlocBuilder<ImageChoiceBloc, ImageChoiceState>(
             bloc: BlocProvider.of<ImageChoiceBloc>(context),
             builder: (BuildContext context, ImageChoiceState state) => _buildState(context, state),

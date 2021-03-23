@@ -1,5 +1,6 @@
 
 import 'package:dio/dio.dart';
+import 'package:face_features/model/server_api/domain_response.dart';
 import 'package:face_features/model/server_api/response/celeb_similarity.dart';
 import 'package:face_features/model/server_api/util.dart';
 import 'package:flutter/foundation.dart';
@@ -7,8 +8,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart';
 
 
-CelebSimilarityResult _celebSimilarityResponseFromJsonStr(String json) {
-  return CelebSimilarityResult.fromJsonStr(json);
+DomainResponse<CelebSimilarityResponseBody?> _celebSimilarityResponseFromJsonStr(String json) {
+  return DomainResponse.fromJsonStr(json);
 }
 
 
@@ -24,7 +25,7 @@ class ServerApi {
   final Dio _dio;
   final String _cacheDir;
 
-  Future<CelebSimilarityResult> getCelebSimilarity(String imgPath) async {
+  Future<DomainResponse<CelebSimilarityResponseBody?>> getCelebSimilarity(String imgPath) async {
     final FormData formData = FormData.fromMap(<String, dynamic>{
       'image': await MultipartFile.fromFile(imgPath, contentType: MediaType('image', '*')),
     });
@@ -35,24 +36,36 @@ class ServerApi {
       throw Exception();
     }
 
-    final Future<CelebSimilarityResult> celebSimilarityResponse =
-        compute<String, CelebSimilarityResult>(_celebSimilarityResponseFromJsonStr, response.data!);
+    final Future<DomainResponse<CelebSimilarityResponseBody?>> responseBody =
+      compute<String, DomainResponse<CelebSimilarityResponseBody?>>(
+          _celebSimilarityResponseFromJsonStr, response.data!
+      );
 
-    return celebSimilarityResponse;
+    return responseBody;
   }
 
-  Future<String> getUserCroppedImage(String imgId) async {
-    final String route = GET_CROPPED_USER_IMG_ROUTE.replaceFirst(FACE_UUID_TEMPLATE, imgId);
-    await _dio.download(route, (Headers headers) {
-      final String contentDisposition = headers.value('content-disposition')!;
-      final String? fileName = getFileNameFromContentDisposition(contentDisposition);
-      final String savePath = join(_cacheDir, fileName!);
+  Future<String> getUserCroppedImage(String imgId) {
+    final String url = GET_CROPPED_USER_IMG_ROUTE.replaceFirst(FACE_UUID_TEMPLATE, imgId);
+    return _downloadImage(url);
+  }
 
+  Future<String> getCelebImage(String url) => _downloadImage(url);
+
+  String _getTmpSavePath(Headers headers) {
+    final String contentDisposition = headers.value('content-disposition')!;
+    final String? fileName = getFileNameFromContentDisposition(contentDisposition);
+    final String savePath = join(_cacheDir, fileName!);
+
+    return savePath;
+  }
+  
+  Future<String> _downloadImage(String url) async {
+    String savePath = '';
+    await _dio.download(url, (Headers headers) {
+      savePath = _getTmpSavePath(headers);
       return savePath;
     });
 
-    return Future<String>(() => '');
+    return Future<String>(() => savePath);
   }
-
-  // Future<void> save
 }

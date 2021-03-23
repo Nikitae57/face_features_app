@@ -1,0 +1,7 @@
+{
+  "data":null,
+  "error":{
+    "type":2,
+    "message":"There's more than one face on image"
+  }
+}

@@ -6,10 +6,10 @@ part of 'celeb_similarity.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-CelebSimilarityResult _$CelebSimilarityResponseFromJson(
+CelebSimilarityResponseBody _$CelebSimilarityResponseBodyFromJson(
     Map<String, dynamic> json) {
-  return $checkedNew('CelebSimilarityResponse', json, () {
-    final val = CelebSimilarityResult(
+  return $checkedNew('CelebSimilarityResponseBody', json, () {
+    final val = CelebSimilarityResponseBody(
       userCroppedFaceImgId:
           $checkedConvert(json, 'user_cropped_face_id', (v) => v as String),
       predictions: $checkedConvert(
@@ -23,8 +23,8 @@ CelebSimilarityResult _$CelebSimilarityResponseFromJson(
   }, fieldKeyMap: const {'userCroppedFaceImgId': 'user_cropped_face_id'});
 }
 
-Map<String, dynamic> _$CelebSimilarityResponseToJson(
-        CelebSimilarityResult instance) =>
+Map<String, dynamic> _$CelebSimilarityResponseBodyToJson(
+        CelebSimilarityResponseBody instance) =>
     <String, dynamic>{
       'user_cropped_face_id': instance.userCroppedFaceImgId,
       'predictions': instance.predictions,

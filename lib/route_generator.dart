@@ -1,6 +1,9 @@
+import 'package:face_features/model/server_api/response/celeb_similarity.dart';
 import 'package:face_features/model/user_photo.dart';
 import 'package:face_features/screen/image_choice/page.dart';
+import 'package:face_features/screen/image_processing/page.dart';
 import 'package:face_features/screen/image_verification/page.dart';
+import 'package:face_features/strings.dart' as strings;
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -34,8 +37,8 @@ class RouteGenerator {
         return _imgChoicePage();
       case IMG_VERIFICATION_ROUTE:
         return _imgVerificationPage(args);
-      // case IMG_PROCESSING_ROUTE:
-      //   return _imgProcessingPage();
+      case IMG_PROCESSING_ROUTE:
+        // return _imgProcessingPage();
       default:
         throw ArgumentError('Unknown route name: $destinationName');
     }
@@ -52,6 +55,26 @@ class RouteGenerator {
     return navigate(to: IMG_VERIFICATION_ROUTE, context: context, args: image);
   }
 
+  static Future<dynamic> navigateToImgProcessing({
+    required BuildContext context,
+    required UserImage image
+  }) async {
+    return navigate(to: IMG_PROCESSING_ROUTE, context: context, args: image);
+  }
+
+  static Future<dynamic> navigateToImgProcessingResult({
+    required BuildContext context,
+    required UserImage image,
+    required CelebSimilarityResponseBody result
+  }) async {
+    final Map<String, dynamic> args = <String, dynamic>{
+      strings.IMAGE_ARGS_KEY: image,
+      strings.IMG_PROCESSING_RESULT_ARGS_KEY: result
+    };
+
+    return navigate(to: IMG_PROCESSING_RESULT_ROUTE, context: context, args: args);
+  }
+
   static Route<ImageChoicePage> _imgChoicePage() {
     return NoAnimationMaterialPageRoute<ImageChoicePage>(builder: (_) => const ImageChoicePage());
   }
@@ -62,6 +85,16 @@ class RouteGenerator {
         builder: (_) => ImageVerificationPage(
           image: args,
         ),
+      );
+    } else {
+      throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
+    }
+  }
+
+  static Route<ImageVerificationPage> _imgProcessingPage(dynamic args) {
+    if (args is UserImage) {
+      return NoAnimationMaterialPageRoute<ImageVerificationPage>(
+        builder: (_) => const ImageProcessingPage(),
       );
     } else {
       throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');

@@ -1,4 +1,4 @@
-import 'package:face_features/router_generator.dart';
+import 'package:face_features/route_generator.dart';
 import 'package:flutter/material.dart';
 
 class FaceFeaturesApp extends StatelessWidget {

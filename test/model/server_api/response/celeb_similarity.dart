@@ -6,11 +6,11 @@ import 'package:face_features/model/server_api/response/prediction.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final String testJsonStr = File('test_resources/celeb_similarity.json').readAsStringSync();
+  final String testJsonStr = File('test_resources/json/celeb_similarity.json').readAsStringSync();
   final Map<String, dynamic> testJson = jsonDecode(testJsonStr) as Map<String, dynamic>;
 
-  test('Convert JSON to CelebSimilarityResponse instance', () {
-    final CelebSimilarityResult celeb = CelebSimilarityResult.fromJson(testJson);
+  test('Convert JSON to CelebSimilarityResponseBody instance', () {
+    final CelebSimilarityResponseBody celeb = CelebSimilarityResponseBody.fromJson(testJson);
     assert(celeb.userCroppedFaceImgId == 'd944a72205ab48e19883');
     assert(celeb.predictions.length == 1);
 
