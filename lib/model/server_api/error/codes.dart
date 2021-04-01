@@ -1,10 +1,11 @@
 enum ServerErrors {
-  Unknown, MoreThanOneFace
+  Unknown, MoreThanOneFace, NoFaces
 }
 
 Map<int, ServerErrors> _codeToError = <int, ServerErrors> {
   0x1: ServerErrors.Unknown,
-  0x2: ServerErrors.MoreThanOneFace
+  0x2: ServerErrors.MoreThanOneFace,
+  0x3: ServerErrors.NoFaces
 };
 
 ServerErrors errorCodeToDomain(int code) {

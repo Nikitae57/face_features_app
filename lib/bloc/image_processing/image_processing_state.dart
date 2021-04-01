@@ -26,4 +26,6 @@ class ImageProcessingInternalErrorState extends ImageProcessingState {}
 
 class ImageProcessingMoreThanOneFaceErrorState extends ImageProcessingState {}
 
+class ImageProcessingNoFacesErrorState extends ImageProcessingState {}
+
 class ImageProcessingEmptyResultState extends ImageProcessingState {}

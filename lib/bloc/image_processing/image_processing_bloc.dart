@@ -97,6 +97,8 @@ class ImageProcessingBloc extends Bloc<ImageProcessingEvent, ImageProcessingStat
     switch(errorType) {
       case ServerErrors.MoreThanOneFace:
         return ImageProcessingMoreThanOneFaceErrorState();
+      case ServerErrors.NoFaces:
+        return ImageProcessingNoFacesErrorState();
       default:
         return ImageProcessingInternalErrorState();
     }

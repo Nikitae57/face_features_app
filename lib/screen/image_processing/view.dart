@@ -40,11 +40,13 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
 
   void _listenState(BuildContext context, ImageProcessingState state) {
     if (state is ImageProcessingNetworkErrorState) {
-      _showNetworkError(context);
-      _navigateToImageChoice(context);
+      _processNetworkError(context);
     } else if (state is ImageProcessingInternalErrorState) {
-      _showInternalError(context);
-      _navigateToImageChoice(context);
+      _processInternalError(context);
+    } else if (state is ImageProcessingMoreThanOneFaceErrorState) {
+      _processMoreThanOneFaceError(context);
+    } else if (state is ImageProcessingNoFacesErrorState) {
+      _processNoFacesError(context);
     }
   }
 
@@ -52,8 +54,38 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
     await RouteGenerator.navigateToImageChoice(context: context, clearStack: true);
   }
 
+  void _processNetworkError(BuildContext context) {
+    _showNetworkError(context);
+    _navigateToImageChoice(context);
+  }
+
+  void _processInternalError(BuildContext context) {
+    _showInternalError(context);
+    _navigateToImageChoice(context);
+  }
+
+  void _processMoreThanOneFaceError(BuildContext context) {
+    _showMoreThanOneFaceError(context);
+    _navigateToImageChoice(context);
+  }
+
+  void _processNoFacesError(BuildContext context) {
+    _showNoFacesError(context);
+    _navigateToImageChoice(context);
+  }
+
   void _showNetworkError(BuildContext context) {
     const String message = 'Network error occurred';
+    _showSnackBar(context, message);
+  }
+
+  void _showNoFacesError(BuildContext context) {
+    const String message = 'No faces found on image';
+    _showSnackBar(context, message);
+  }
+
+  void _showMoreThanOneFaceError(BuildContext context) {
+    const String message = 'Found more than one face';
     _showSnackBar(context, message);
   }
 

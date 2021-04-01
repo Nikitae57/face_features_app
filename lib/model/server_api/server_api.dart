@@ -5,7 +5,8 @@ import 'package:face_features/model/server_api/response/celeb_similarity.dart';
 import 'package:face_features/model/server_api/util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
+import 'package:uuid/uuid.dart';
 
 
 DomainResponse<CelebSimilarityResponseBody?> _celebSimilarityResponseFromJsonStr(String json) {
@@ -54,15 +55,27 @@ class ServerApi {
   String _getTmpSavePath(Headers headers) {
     final String contentDisposition = headers.value('content-disposition')!;
     final String? fileName = getFileNameFromContentDisposition(contentDisposition);
-    final String savePath = join(_cacheDir, fileName!);
+    final String savePath = path.join(_cacheDir, fileName!);
 
     return savePath;
   }
   
   Future<String> _downloadImage(String url) async {
     String savePath = '';
+    if (!url.startsWith('/')) {
+      url = '/$url';
+    }
     await _dio.download(url, (Headers headers) {
-      savePath = _getTmpSavePath(headers);
+      final String baseName = path.basename(url);
+      final RegExp fileNameRegex = RegExp(r'.+\..+');
+      final String? extension = fileNameRegex.stringMatch(baseName);
+      if (extension != null) {
+        final String uuid = const Uuid().v1();
+        final String fileName = '$uuid$extension';
+        savePath = path.join(_cacheDir, fileName);
+      } else {
+        savePath = _getTmpSavePath(headers);
+      }
       return savePath;
     });
 
