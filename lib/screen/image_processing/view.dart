@@ -1,4 +1,5 @@
 import 'package:face_features/bloc/image_processing/image_processing_bloc.dart';
+import 'package:face_features/model/celeb_similarity_result.dart';
 import 'package:face_features/screen/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +48,8 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
       _processMoreThanOneFaceError(context);
     } else if (state is ImageProcessingNoFacesErrorState) {
       _processNoFacesError(context);
+    } else if (state is GotImageProcessingResult<CelebSimilarityResult>) {
+      RouteGenerator.navigateToImgProcessingResult(context: context, result: state.result);
     }
   }
 

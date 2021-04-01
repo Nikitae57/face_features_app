@@ -1,9 +1,9 @@
-import 'package:face_features/model/server_api/response/celeb_similarity.dart';
+import 'package:face_features/model/celeb_similarity_result.dart';
 import 'package:face_features/model/user_photo.dart';
 import 'package:face_features/screen/image_choice/page.dart';
 import 'package:face_features/screen/image_processing/page.dart';
 import 'package:face_features/screen/image_verification/page.dart';
-import 'package:face_features/strings.dart' as strings;
+import 'package:face_features/screen/similarity_results/page.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -39,6 +39,8 @@ class RouteGenerator {
         return _imgVerificationPage(args);
       case IMG_PROCESSING_ROUTE:
         return _imgProcessingPage(args);
+      case IMG_PROCESSING_RESULT_ROUTE:
+        return _similarityResults(args);
       default:
         throw ArgumentError('Unknown route name: $destinationName');
     }
@@ -50,7 +52,11 @@ class RouteGenerator {
     bool clearStack = false,
     dynamic args
   }) async {
-    return Navigator.of(context).pushNamed(to, arguments: args);
+    if (clearStack) {
+      return Navigator.of(context).pushNamedAndRemoveUntil(to, (route) => false);
+    } else {
+      return Navigator.of(context).pushNamed(to, arguments: args);
+    }
   }
 
   static Future<dynamic> navigateToImgVerification({
@@ -69,15 +75,9 @@ class RouteGenerator {
 
   static Future<dynamic> navigateToImgProcessingResult({
     required BuildContext context,
-    required UserImage image,
-    required CelebSimilarityResponseBody result
+    required CelebSimilarityResult result
   }) async {
-    final Map<String, dynamic> args = <String, dynamic>{
-      strings.IMAGE_ARGS_KEY: image,
-      strings.IMG_PROCESSING_RESULT_ARGS_KEY: result
-    };
-
-    return navigate(to: IMG_PROCESSING_RESULT_ROUTE, context: context, args: args);
+    return navigate(to: IMG_PROCESSING_RESULT_ROUTE, context: context, args: result);
   }
 
   static Future<dynamic> navigateToImageChoice({
@@ -110,6 +110,16 @@ class RouteGenerator {
       );
     } else {
       throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
+    }
+  }
+
+  static Route<ImageProcessingPage> _similarityResults(dynamic args) {
+    if (args is CelebSimilarityResult) {
+      return MaterialPageRoute<ImageProcessingPage>(
+        builder: (_) => SimilarityResultsPage(similarityResult: args),
+      );
+    } else {
+      throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $CelebSimilarityResult');
     }
   }
 }
