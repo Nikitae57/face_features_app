@@ -44,7 +44,12 @@ class RouteGenerator {
     }
   }
 
-  static Future<dynamic> navigate({required String to, required BuildContext context, dynamic args}) async {
+  static Future<dynamic> navigate({
+    required String to,
+    required BuildContext context,
+    bool clearStack = false,
+    dynamic args
+  }) async {
     return Navigator.of(context).pushNamed(to, arguments: args);
   }
 
@@ -73,6 +78,13 @@ class RouteGenerator {
     };
 
     return navigate(to: IMG_PROCESSING_RESULT_ROUTE, context: context, args: args);
+  }
+
+  static Future<dynamic> navigateToImageChoice({
+    required BuildContext context,
+    bool clearStack = false
+  }) async {
+    return navigate(to: IMG_CHOICE_ROUTE, context: context, clearStack: clearStack);
   }
 
   static Route<ImageChoicePage> _imgChoicePage() {

@@ -3,6 +3,8 @@ import 'package:face_features/screen/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../route_generator.dart';
+
 class ImageProcessingView extends StatefulWidget {
   const ImageProcessingView({Key? key}) : super(key: key);
 
@@ -37,6 +39,31 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
   }
 
   void _listenState(BuildContext context, ImageProcessingState state) {
-    print(state);
+    if (state is ImageProcessingNetworkErrorState) {
+      _showNetworkError(context);
+      _navigateToImageChoice(context);
+    } else if (state is ImageProcessingInternalErrorState) {
+      _showInternalError(context);
+      _navigateToImageChoice(context);
+    }
+  }
+
+  Future<void> _navigateToImageChoice(BuildContext context) async {
+    await RouteGenerator.navigateToImageChoice(context: context, clearStack: true);
+  }
+
+  void _showNetworkError(BuildContext context) {
+    const String message = 'Network error occurred';
+    _showSnackBar(context, message);
+  }
+
+  void _showInternalError(BuildContext context) {
+    const String message = 'Something went wrong. Try again later';
+    _showSnackBar(context, message);
+  }
+
+  void _showSnackBar(BuildContext context, String text) {
+    final SnackBar snackBar = SnackBar(content: Text(text));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

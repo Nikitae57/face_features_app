@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:face_features/config.dart' as config;
 import 'package:face_features/model/celeb_similarity_result.dart';
 import 'package:face_features/model/image_processing/compression/compression_params.dart';
 import 'package:face_features/model/image_processing/compression/compressor.dart';
 import 'package:face_features/model/server_api/domain_response.dart';
 import 'package:face_features/model/server_api/error/codes.dart';
-import 'package:face_features/model/server_api/error/exception.dart';
 import 'package:face_features/model/server_api/response/api_error.dart';
 import 'package:face_features/model/server_api/response/celeb_similarity.dart';
 import 'package:face_features/model/server_api/response/predicted_celeb.dart';
@@ -76,7 +76,7 @@ class ImageProcessingBloc extends Bloc<ImageProcessingEvent, ImageProcessingStat
       );
 
       yield GotImageProcessingResult<CelebSimilarityResult>(result);
-    } on NetworkException {
+    } on DioError {
       yield ImageProcessingNetworkErrorState();
     } on Exception catch (e) {
       print(e);
