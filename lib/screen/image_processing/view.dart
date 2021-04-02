@@ -19,15 +19,25 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
     return Scaffold(
       body: BlocListener<ImageProcessingBloc, ImageProcessingState>(
         listener: (BuildContext context, ImageProcessingState state) => _listenState(context, state),
-        child: Container(
-          height: double.infinity,
-          decoration: getBackgroundGradient(context),
-          child: BlocBuilder<ImageProcessingBloc, ImageProcessingState>(
-            bloc: BlocProvider.of<ImageProcessingBloc>(context),
-            builder: (BuildContext context, ImageProcessingState state) => _buildState(context, state),
-          ),
+        child: BlocBuilder<ImageProcessingBloc, ImageProcessingState>(
+          bloc: BlocProvider.of<ImageProcessingBloc>(context),
+          builder: (BuildContext context, ImageProcessingState state) => _view(context, state),
         ),
       ),
+    );
+  }
+
+  Widget _view(BuildContext context, ImageProcessingState state) {
+    return WillPopScope(
+      child: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: getBackgroundGradient(context),
+        child: _buildState(context, state),
+      ),
+      onWillPop: () async {
+        return false;
+      },
     );
   }
 
@@ -35,7 +45,7 @@ class _ImageProcessingViewState extends State<ImageProcessingView> with SingleTi
     return const SizedBox(
       height: double.infinity,
       width: double.infinity,
-      child: CircularProgressIndicator.adaptive(),
+      child: Center(child: CircularProgressIndicator.adaptive()),
     );
   }
 

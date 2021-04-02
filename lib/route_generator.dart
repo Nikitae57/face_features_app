@@ -46,49 +46,48 @@ class RouteGenerator {
     }
   }
 
-  static Future<dynamic> navigate({
-    required String to,
-    required BuildContext context,
-    bool clearStack = false,
-    dynamic args
-  }) async {
+  static Future<dynamic> navigate(
+      {required String to,
+      required BuildContext context,
+      bool clearStack = false,
+      dynamic args}) async {
     if (clearStack) {
-      return Navigator.of(context).pushNamedAndRemoveUntil(to, (route) => false);
+      return Navigator.of(context)
+          .pushNamedAndRemoveUntil(to, (route) => false, arguments: args);
     } else {
       return Navigator.of(context).pushNamed(to, arguments: args);
     }
   }
 
-  static Future<dynamic> navigateToImgVerification({
-    required BuildContext context,
-    required UserImage image
-  }) async {
+  static Future<dynamic> navigateToImgVerification(
+      {required BuildContext context, required UserImage image}) async {
     return navigate(to: IMG_VERIFICATION_ROUTE, context: context, args: image);
   }
 
-  static Future<dynamic> navigateToImgProcessing({
-    required BuildContext context,
-    required UserImage image
-  }) async {
+  static Future<dynamic> navigateToImgProcessing(
+      {required BuildContext context, required UserImage image}) async {
     return navigate(to: IMG_PROCESSING_ROUTE, context: context, args: image);
   }
 
-  static Future<dynamic> navigateToImgProcessingResult({
-    required BuildContext context,
-    required CelebSimilarityResult result
-  }) async {
-    return navigate(to: IMG_PROCESSING_RESULT_ROUTE, context: context, args: result);
+  static Future<dynamic> navigateToImgProcessingResult(
+      {required BuildContext context,
+      required CelebSimilarityResult result}) async {
+    return navigate(
+        to: IMG_PROCESSING_RESULT_ROUTE,
+        context: context,
+        clearStack: true,
+        args: result);
   }
 
-  static Future<dynamic> navigateToImageChoice({
-    required BuildContext context,
-    bool clearStack = false
-  }) async {
-    return navigate(to: IMG_CHOICE_ROUTE, context: context, clearStack: clearStack);
+  static Future<dynamic> navigateToImageChoice(
+      {required BuildContext context, bool clearStack = false}) async {
+    return navigate(
+        to: IMG_CHOICE_ROUTE, context: context, clearStack: clearStack);
   }
 
   static Route<ImageChoicePage> _imgChoicePage() {
-    return NoAnimationMaterialPageRoute<ImageChoicePage>(builder: (_) => const ImageChoicePage());
+    return NoAnimationMaterialPageRoute<ImageChoicePage>(
+        builder: (_) => const ImageChoicePage());
   }
 
   static Route<ImageVerificationPage> _imgVerificationPage(dynamic args) {
@@ -99,7 +98,8 @@ class RouteGenerator {
         ),
       );
     } else {
-      throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
+      throw ArgumentError(
+          'Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
     }
   }
 
@@ -109,7 +109,8 @@ class RouteGenerator {
         builder: (_) => ImageProcessingPage(image: args),
       );
     } else {
-      throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
+      throw ArgumentError(
+          'Invalid args of type ${args.runtimeType}. Needed type: $UserImage');
     }
   }
 
@@ -119,7 +120,8 @@ class RouteGenerator {
         builder: (_) => SimilarityResultsPage(similarityResult: args),
       );
     } else {
-      throw ArgumentError('Invalid args of type ${args.runtimeType}. Needed type: $CelebSimilarityResult');
+      throw ArgumentError(
+          'Invalid args of type ${args.runtimeType}. Needed type: $CelebSimilarityResult');
     }
   }
 }
@@ -130,12 +132,15 @@ class NoAnimationMaterialPageRoute<T> extends MaterialPageRoute<T> {
     RouteSettings? settings,
     bool maintainState = true,
     bool fullscreenDialog = false,
-  }) : super(builder: builder, maintainState: maintainState, settings: settings, fullscreenDialog: fullscreenDialog);
+  }) : super(
+            builder: builder,
+            maintainState: maintainState,
+            settings: settings,
+            fullscreenDialog: fullscreenDialog);
 
   @override
-  Widget buildTransitions(
-      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
     return child;
   }
 }

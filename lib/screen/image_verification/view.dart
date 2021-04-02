@@ -50,7 +50,7 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
                 child: _buildState(context, state),
                 onWillPop: () async {
                   await _navigateBack(context);
-                  return false;
+                  return true;
                 }
             );
           },

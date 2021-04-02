@@ -14,7 +14,7 @@ class SimilarityResultsBloc extends Bloc<SimilarityResultsEvent, SimilarityResul
 
   @override
   Stream<SimilarityResultsState> mapEventToState(SimilarityResultsEvent event) async* {
-    if (event is SimilarityResultsUploadNewImage) {
+    if (event is SimilarityResultsUploadNewImageEvent) {
       yield SimilarityResultsUploadingNewImageState();
     }
   }
