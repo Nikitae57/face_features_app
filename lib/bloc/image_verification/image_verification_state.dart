@@ -9,9 +9,14 @@ class ImageVerificationInitialState extends ImageVerificationState {
   final UserImage image;
 }
 
+class ImageVerificationIdleState extends ImageVerificationState {
+  ImageVerificationIdleState(this.image);
+  final UserImage image;
+}
+
 class ImageVerifiedState extends ImageVerificationState {
   ImageVerifiedState(this.image);
   final UserImage image;
 }
 
-class ImageDeniedState extends ImageVerificationState {}
+class ImageVerificationDeniedState extends ImageVerificationState {}

@@ -47,11 +47,11 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
         child: BlocBuilder<ImageVerificationBloc, ImageVerificationState>(
           builder: (BuildContext context, ImageVerificationState state) {
             return WillPopScope(
-                child: _buildState(context, state),
-                onWillPop: () async {
-                  await _navigateBack(context);
-                  return true;
-                }
+              child: _buildState(context, state),
+              onWillPop: () async {
+                await _navigateBack(context);
+                return true;
+              },
             );
           },
         ),
@@ -75,17 +75,20 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
 
   Widget _buildState(BuildContext context, ImageVerificationState state) {
     if (state is ImageVerificationInitialState) {
-      return _initialState(context);
-    }
-
-    if (state is ImageDeniedState) {
+      _animateIn();
+      context.read<ImageVerificationBloc>().add(ImageVerificationIdlingEvent());
+      return _screen();
+    } else if (state is ImageVerificationIdleState) {
+      return _screen();
+    } else if (state is ImageVerificationDeniedState) {
       return _imageDeniedState(context);
+    } else {
+      return _screen();
     }
-    return _initialState(context);
   }
 
   void _listenState(BuildContext context, ImageVerificationState state) {
-    if (state is ImageDeniedState) {
+    if (state is ImageVerificationDeniedState) {
       _navigateBack(context);
     } else if (state is ImageVerifiedState) {
       _navigateToImageProcessing(context, state.image);
@@ -98,13 +101,8 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   }
 
   Future<void> _navigateToImageProcessing(BuildContext context, UserImage image) async {
-    // await _animateOut();
+    await _animateOut();
     RouteGenerator.navigateToImgProcessing(context: context, image: image);
-  }
-
-  Widget _initialState(BuildContext context) {
-    _animateIn();
-    return _screen();
   }
 
   Widget _imageDeniedState(BuildContext context) {
@@ -118,16 +116,13 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
         if (orientation == Orientation.portrait) {
           child = Column(children: _screenContent());
         } else {
-          child = Row(
-              children: <Widget>[..._screenContent(), const Spacer()],
-              crossAxisAlignment: CrossAxisAlignment.end
-          );
+          child =
+              Row(children: <Widget>[..._screenContent(), const Spacer()], crossAxisAlignment: CrossAxisAlignment.end);
         }
 
         return Container(
           height: double.infinity,
           width: double.infinity,
-
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomLeft,
@@ -188,7 +183,6 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
         final double screenWidth = MediaQuery.of(context).size.width;
         final double tileSize = min(screenWidth, screenHeight) * 0.9;
 
-
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: _padding),
           child: ItemFader(
@@ -225,7 +219,6 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
   }
 
   Widget _controlButtons(BuildContext context) {
-
     return Row(
       children: <Widget>[
         _cancelControlBtn(context),
@@ -262,7 +255,7 @@ class _ImageVerificationViewState extends State<ImageVerificationView> with Tick
       child: ItemFader(
         key: _keys[2],
         child: GestureDetector(
-          onTap: () => bloc.add(ImageVerifiedEvent()),
+          onTap: () => bloc.add(ImageVerificationAcceptedEvent()),
           child: ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: _radius),
             child: Container(

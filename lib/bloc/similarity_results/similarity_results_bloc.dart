@@ -9,13 +9,17 @@ part 'similarity_results_state.dart';
 
 class SimilarityResultsBloc extends Bloc<SimilarityResultsEvent, SimilarityResultsState> {
   SimilarityResultsBloc({required CelebSimilarityResult similarityResult})
-      : super(InitialSimilarityResultsState(similarityResult));
+      : _result = similarityResult,
+        super(InitialSimilarityResultsState(similarityResult));
 
+  final CelebSimilarityResult _result;
 
   @override
   Stream<SimilarityResultsState> mapEventToState(SimilarityResultsEvent event) async* {
     if (event is SimilarityResultsUploadNewImageEvent) {
       yield SimilarityResultsUploadingNewImageState();
+    } else if (event is SimilarityResultsIdlingEvent) {
+      yield SimilarityResultsIdleState(_result);
     }
   }
 }

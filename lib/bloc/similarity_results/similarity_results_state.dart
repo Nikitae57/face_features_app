@@ -8,4 +8,9 @@ class InitialSimilarityResultsState extends SimilarityResultsState {
   final CelebSimilarityResult similarity;
 }
 
+class SimilarityResultsIdleState extends SimilarityResultsState {
+  SimilarityResultsIdleState(this.similarity);
+  final CelebSimilarityResult similarity;
+}
+
 class SimilarityResultsUploadingNewImageState extends SimilarityResultsState {}
